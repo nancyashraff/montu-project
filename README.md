@@ -1,4 +1,4 @@
-# Express TypeScript & MongoDB Server Boilerplate
+# Express TypeScript & MongoDB Server
 
 A clean, production-ready REST API boilerplate built with **Node.js**, **Express**, **TypeScript**, and **MongoDB (Mongoose)**. Features a modular directory structure, custom logging & global error middlewares, Mongoose User schema modeling with validation, environment variable configuration, and live-reloading dev environment powered by `tsx`.
 
