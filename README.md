@@ -1,6 +1,6 @@
-# Express TypeScript Server
+# Express TypeScript & MongoDB Server Boilerplate
 
-A clean, production-ready REST API boilerplate built with **Node.js**, **Express**, and **TypeScript**. Features a modular directory structure (Controllers, Routes, Middlewares, Models), custom logging & error middlewares, environment variable management, and live-reloading dev environment powered by `tsx`.
+A clean, production-ready REST API boilerplate built with **Node.js**, **Express**, **TypeScript**, and **MongoDB (Mongoose)**. Features a modular directory structure, custom logging & global error middlewares, Mongoose User schema modeling with validation, environment variable configuration, and live-reloading dev environment powered by `tsx`.
 
 ---
 
@@ -9,17 +9,19 @@ A clean, production-ready REST API boilerplate built with **Node.js**, **Express
 ```
 my-server/
 ├── src/
+│   ├── config/            # Database and external service configurations
+│   │   └── db.ts          # MongoDB Atlas connection handler
 │   ├── controllers/       # Business logic / request handlers
 │   │   └── health.controller.ts
-│   ├── middlewares/       # Express middlewares (auth, validation, logger, error handler)
+│   ├── middlewares/       # Express middlewares (logger, global error handler)
 │   │   ├── error.middleware.ts
 │   │   └── logger.middleware.ts
-│   ├── models/            # Database schemas & data models
-│   │   └── .gitkeep       # Keeps models folder tracked in Git
+│   ├── models/            # Mongoose schemas & data models
+│   │   └── user.model.ts  # User schema with validation rules & interfaces
 │   ├── routes/            # API endpoints mapping to controllers
 │   │   └── health.route.ts
 │   └── index.ts           # Server entry point & Express configuration
-├── .env                   # Local environment variables
+├── .env                   # Environment variables (DB URI, PORT, NODE_ENV)
 ├── .gitignore             # Git ignored files & folders
 ├── package.json           # Dependencies and npm scripts
 ├── tsconfig.json          # TypeScript compiler configuration
@@ -28,11 +30,12 @@ my-server/
 
 ### Folder Breakdown
 
-* **`src/controllers/`**: Contains function handlers for processing HTTP requests, executing business logic, and returning responses.
-* **`src/routes/`**: Defines API paths and binds them to specific controller actions. Keep routes thin and declarative.
-* **`src/middlewares/`**: Custom Express middlewares for request logging (`logger.middleware.ts`), global error handling (`error.middleware.ts`), authentication, and input validation.
-* **`src/models/`**: Data layer definitions (e.g., Prisma, TypeORM, or Mongoose models). Includes `.gitkeep` to preserve folder structure in version control.
-* **`src/index.ts`**: Initializes environment variables, configures core Express middleware (`cors`, `json`, `requestLogger`), mounts application routes, and registers global error handlers.
+* **`src/config/`**: Contains database connection logic (`db.ts`) for connecting Mongoose to MongoDB Atlas.
+* **`src/controllers/`**: Contains function handlers for processing HTTP requests and returning API responses.
+* **`src/routes/`**: Defines API paths and binds them to specific controller actions.
+* **`src/middlewares/`**: Custom Express middlewares for request logging (`logger.middleware.ts`) and global error handling (`error.middleware.ts`).
+* **`src/models/`**: Defines Mongoose schemas, interfaces, and validation rules (`user.model.ts`).
+* **`src/index.ts`**: Main entry point connecting to MongoDB, applying middlewares, registering routes, and starting the Express server.
 
 ---
 
@@ -42,6 +45,7 @@ my-server/
 
 * **Node.js** (v18 or higher recommended)
 * **npm** or **yarn**
+* **MongoDB Atlas** cluster (or local MongoDB instance)
 
 ### Installation
 
@@ -61,6 +65,7 @@ my-server/
    ```env
    PORT=3000
    NODE_ENV=development
+   MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxx.mongodb.net/<dbname>?retryWrites=true&w=majority
    ```
 
 ---
@@ -95,10 +100,25 @@ In the project directory, you can run:
 
 ---
 
+## 🗄️ Database Schemas
+
+### User Schema (`src/models/user.model.ts`)
+
+| Field | Type | Validation Rules |
+| :--- | :--- | :--- |
+| `name` | String | Required, trimmed, max 50 characters |
+| `email` | String | Required, unique, lowercase, regex email format validation |
+| `passwordHash` | String | Required |
+| `role` | String | Enum (`'user'`, `'admin'`), default: `'user'` |
+| `createdAt` / `updatedAt` | Date | Auto-generated timestamps |
+
+---
+
 ## 🛠️ Technology Stack
 
 * **Runtime**: [Node.js](https://nodejs.org/)
 * **Framework**: [Express.js](https://expressjs.com/)
+* **Database**: [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) with [Mongoose](https://mongoosejs.com/)
 * **Language**: [TypeScript](https://www.typescriptlang.org/)
 * **Dev Execution Engine**: [tsx](https://github.com/privatenumber/tsx)
 * **Config Management**: [dotenv](https://github.com/motdotla/dotenv)
