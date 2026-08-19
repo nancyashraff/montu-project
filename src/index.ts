@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import healthRouter from './routes/health.route.js';
+import authRouter from './routes/auth.route.js';
 import { requestLogger } from './middlewares/logger.middleware.js';
 import { errorHandler } from './middlewares/error.middleware.js';
 
@@ -17,6 +18,8 @@ app.use(express.json());
 app.use(requestLogger);
 
 app.use('/', healthRouter);
+
+app.use('/api/auth', authRouter);
 
 app.use(errorHandler);
 
