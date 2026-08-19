@@ -1,8 +1,7 @@
-import { Router } from 'express';
+import express from 'express';
 import { getHealthStatus } from '../controllers/health.controller.js';
 
-const router = Router();
-
+const router = express.Router();
 router.get('/ping', getHealthStatus);
 
 export default router;

@@ -1,4 +1,4 @@
-import express, { Express } from 'express';
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
@@ -9,7 +9,7 @@ import { errorHandler } from './middlewares/error.middleware.js';
 dotenv.config();
 connectDB();
 
-const app: Express = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
