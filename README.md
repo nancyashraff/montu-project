@@ -33,7 +33,7 @@ montu-project/
 │   │   ├── auth.service.ts
 │   │   └── task.service.ts
 │   ├── types/
-│   │   └── express.d.ts
+│   │   └── express.ts
 │   ├── utils/
 │   │   ├── app-error.ts
 │   │   └── jwt.ts

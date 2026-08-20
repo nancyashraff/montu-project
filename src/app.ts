@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import './types/express.js';
 import { connectDB } from './config/db.js';
 import healthRouter from './routes/health.route.js';
 import authRouter from './routes/auth.route.js';
