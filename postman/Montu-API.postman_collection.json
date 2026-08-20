@@ -103,6 +103,26 @@
             "description": "Paste an admin JWT in Authorization → Bearer Token."
           },
           "response": []
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                { "key": "token", "value": "", "type": "string" }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            },
+            "description": "Returns the current user from the Bearer token."
+          },
+          "response": []
         }
       ]
     },
@@ -121,11 +141,16 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/tasks",
+              "raw": "{{baseUrl}}/api/tasks?status=todo&page=1&limit=10",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "tasks"]
+              "path": ["api", "tasks"],
+              "query": [
+                { "key": "status", "value": "todo", "description": "todo, in-progress, or done. Disable to list all." },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
             },
-            "description": "Paste a JWT in Authorization → Bearer Token."
+            "description": "Paste a JWT in Authorization → Bearer Token. Optional query: status, page, limit."
           },
           "response": []
         },

@@ -133,6 +133,7 @@ Expected **201** and `"role": "admin"`.
 | `GET /ping` | No |
 | `POST /api/auth/signup` | No |
 | `POST /api/auth/signin` | No |
+| `GET /api/auth/me` | Yes — any logged-in user |
 | `POST /api/auth/admins` | Yes — must be an **admin** |
 | `GET/POST /api/tasks` | Yes — any logged-in user |
 | `GET/PUT/DELETE /api/tasks/:id` | Yes — any logged-in user |
@@ -202,6 +203,25 @@ Authorization: Bearer <jwt>
   ```
   That is the default tester admin created on startup. After sign-in, copy `data.token` for protected routes.
 
+### Current User
+
+* **URL**: `/api/auth/me`
+* **Method**: `GET`
+* **Auth**: Bearer token
+* **Description**: Returns the user for the given token (no password hash).
+* **Sample Response**:
+  ```json
+  {
+    "status": "success",
+    "data": {
+      "id": "64f1c2a0b8e1a2b3c4d5e6f7",
+      "name": "Default Admin",
+      "email": "admin@example.com",
+      "role": "admin"
+    }
+  }
+  ```
+
 ### Create Admin
 
 * **URL**: `/api/auth/admins`
@@ -221,11 +241,21 @@ Authorization: Bearer <jwt>
 
 | Method | URL | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/tasks` | List the authenticated user's tasks |
+| `GET` | `/api/tasks` | List the authenticated user's tasks. Optional query: `status`, `page`, `limit` |
 | `POST` | `/api/tasks` | Create a task |
 | `GET` | `/api/tasks/:id` | Get one task |
 | `PUT` | `/api/tasks/:id` | Update one task |
 | `DELETE` | `/api/tasks/:id` | Delete one task |
+
+**List query parameters:**
+
+| Param | Default | Notes |
+| :--- | :--- | :--- |
+| `status` | all | `todo`, `in-progress`, or `done` |
+| `page` | `1` | Page number (min 1) |
+| `limit` | `10` | Items per page (max 50) |
+
+Examples: `/api/tasks?status=todo` · `/api/tasks?page=1&limit=2`
 
 **Create / update body:**
 
@@ -249,7 +279,7 @@ Import the collection so frontend (or reviewers) can call every endpoint with wo
 2. Select `postman/Montu-API.postman_collection.json`
 3. Optionally import `postman/Montu-API-Local.postman_environment.json`
 4. Set collection variable `baseUrl` to `http://localhost:3000`
-5. Run **Sign In** with `admin@example.com` / `Admin1234` (or **Sign Up** for a regular user). Copy `data.token` and paste it into **Authorization → Bearer Token** on Tasks or Create Admin. Those requests do not inherit a parent token.
+5. Run **Sign In** with `admin@example.com` / `Admin1234` (or **Sign Up** for a regular user). Copy `data.token` and paste it into **Authorization → Bearer Token** on Get Me, Tasks, or Create Admin. Those requests do not inherit a parent token.
 6. Run **Create Task** — the new id is stored in `{{taskId}}` for get/update/delete
 
 ---

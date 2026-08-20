@@ -45,3 +45,15 @@ export const signin = async (req: Request, res: Response, next: NextFunction): P
     res.status(401).json({ status: 'fail', message: error.message });
   }
 };
+
+export const getMe = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const user = await authService.getCurrentUser(req.user!.id);
+    res.status(200).json({
+      status: 'success',
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -26,9 +26,31 @@ const assertValidId = (id: string): void => {
   }
 };
 
-export const listTasks = async (userId: string) => {
-  const tasks = await Task.find({ userId }).sort({ createdAt: -1 });
-  return tasks.map(formatTask);
+export const listTasks = async (
+  userId: string,
+  options: { status?: TaskStatus; page?: number; limit?: number } = {}
+) => {
+  const page = Math.max(1, options.page ?? 1);
+  const limit = Math.min(50, Math.max(1, options.limit ?? 10));
+  const filter: { userId: string; status?: TaskStatus } = { userId };
+
+  if (options.status) {
+    filter.status = options.status;
+  }
+
+  const skip = (page - 1) * limit;
+  const [tasks, total] = await Promise.all([
+    Task.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Task.countDocuments(filter),
+  ]);
+
+  return {
+    tasks: tasks.map(formatTask),
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit) || 0,
+  };
 };
 
 export const getTaskById = async (userId: string, taskId: string) => {

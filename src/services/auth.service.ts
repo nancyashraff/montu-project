@@ -78,3 +78,17 @@ export const loginUser = async (email: string, password: string) => {
 
   return toAuthResult(user);
 };
+
+export const getCurrentUser = async (userId: string) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError('User not found', 404);
+  }
+
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
+};

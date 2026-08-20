@@ -11,13 +11,14 @@ import {
   validateCreateTask,
   validateUpdateTask,
   validateTaskId,
+  validateListTasks,
 } from '../middlewares/validation.middleware.js';
 
 const router = express.Router();
 
 router.use(protect);
 
-router.get('/', getTasks);
+router.get('/', validateListTasks, getTasks);
 router.post('/', validateCreateTask, createTask);
 router.get('/:id', validateTaskId, getTask);
 router.put('/:id', validateTaskId, validateUpdateTask, updateTask);

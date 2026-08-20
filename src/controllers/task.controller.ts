@@ -10,11 +10,24 @@ const getTaskId = (req: Request): string => {
 
 export const getTasks = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const tasks = await taskService.listTasks(getUserId(req));
+    const status = typeof req.query.status === 'string' ? req.query.status : undefined;
+    const page = typeof req.query.page === 'number' ? req.query.page : Number(req.query.page);
+    const limit = typeof req.query.limit === 'number' ? req.query.limit : Number(req.query.limit);
+
+    const result = await taskService.listTasks(getUserId(req), {
+      status: status as 'todo' | 'in-progress' | 'done' | undefined,
+      page: Number.isFinite(page) ? page : undefined,
+      limit: Number.isFinite(limit) ? limit : undefined,
+    });
+
     res.status(200).json({
       status: 'success',
-      results: tasks.length,
-      data: tasks,
+      results: result.tasks.length,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: result.totalPages,
+      data: result.tasks,
     });
   } catch (error) {
     next(error);

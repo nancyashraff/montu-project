@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { body, param, validationResult } from 'express-validator';
+import { body, param, query, validationResult } from 'express-validator';
 
 const handleValidation = (req: Request, res: Response, next: NextFunction): void => {
   const errors = validationResult(req);
@@ -34,6 +34,21 @@ export const validateSignin = [
     .normalizeEmail(),
   body('password')
     .notEmpty().withMessage('Password is required'),
+  handleValidation,
+];
+
+export const validateListTasks = [
+  query('status')
+    .optional()
+    .isIn(['todo', 'in-progress', 'done']).withMessage('Status must be todo, in-progress, or done'),
+  query('page')
+    .optional()
+    .isInt({ min: 1 }).withMessage('page must be a positive integer')
+    .toInt(),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 50 }).withMessage('limit must be between 1 and 50')
+    .toInt(),
   handleValidation,
 ];
 
