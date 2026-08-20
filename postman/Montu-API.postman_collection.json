@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "a7c3e1d0-4b2f-4f8a-9c11-montu-api-2026",
+    "_postman_id": "a7c3e1d0-4b2f-4f8a-9c11-8e2f6b4c91a0",
     "name": "Montu API",
-    "description": "Auth and protected Task CRUD endpoints for the Montu backend.\n\n1. Set `baseUrl` to `http://localhost:3000` locally, or to the live Render URL.\n2. Run **Sign Up** or **Sign In** — the token is saved automatically.\n3. Task requests send `Authorization: Bearer {{token}}`.\n4. **Create Task** saves `taskId` for get/update/delete.",
+    "description": "Auth and protected Task CRUD endpoints.\n\nSet `baseUrl` to `http://localhost:3000`.\nRun Sign Up or Sign In first so `{{token}}` is saved.\nCreate Task saves `{{taskId}}`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -16,18 +16,9 @@
     ]
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:3000"
-    },
-    {
-      "key": "token",
-      "value": ""
-    },
-    {
-      "key": "taskId",
-      "value": ""
-    }
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "taskId", "value": "" }
   ],
   "item": [
     {
@@ -39,9 +30,14 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/ping",
-            "description": "Public health check. No authentication required."
-          }
+            "url": {
+              "raw": "{{baseUrl}}/ping",
+              "host": ["{{baseUrl}}"],
+              "path": ["ping"]
+            },
+            "description": "Public health check."
+          },
+          "response": []
         }
       ]
     },
@@ -70,18 +66,21 @@
             "auth": { "type": "noauth" },
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"secret123\"\n}"
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"secret123\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": "{{baseUrl}}/api/auth/signup",
-            "description": "Register a new user. Always assigns role `user`. Sending `role: admin` is 403 unless no admin exists yet. Saves the JWT to `{{token}}`."
-          }
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "signup"]
+            },
+            "description": "Register a user. Role is always user. role=admin is 403 unless no admin exists yet."
+          },
+          "response": []
         },
         {
           "name": "Sign In",
@@ -105,36 +104,42 @@
             "auth": { "type": "noauth" },
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"jane@example.com\",\n  \"password\": \"secret123\"\n}"
+              "raw": "{\n  \"email\": \"task31-admin@example.com\",\n  \"password\": \"test1234\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": "{{baseUrl}}/api/auth/signin",
-            "description": "Log in with email and password. Saves the JWT to `{{token}}`."
-          }
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/signin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "signin"]
+            },
+            "description": "Log in. Saves JWT to {{token}}."
+          },
+          "response": []
         },
         {
           "name": "Create Admin",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Admin Two\",\n  \"email\": \"admin2@example.com\",\n  \"password\": \"secret123\"\n}"
+              "raw": "{\n  \"name\": \"Admin Two\",\n  \"email\": \"admin2@example.com\",\n  \"password\": \"secret123\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": "{{baseUrl}}/api/auth/admins",
-            "description": "Create an admin account. Requires a Bearer token whose role is `admin`. Regular users receive 403."
-          }
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/admins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "admins"]
+            },
+            "description": "Admin-only. Requires Bearer token of an admin."
+          },
+          "response": []
         }
       ]
     },
@@ -146,9 +151,13 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/tasks",
-            "description": "Returns all tasks owned by the authenticated user."
-          }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            }
+          },
+          "response": []
         },
         {
           "name": "Create Task",
@@ -171,54 +180,66 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Finish Task 3.4\",\n  \"description\": \"CRUD, Postman collection, and deployment\",\n  \"status\": \"todo\"\n}"
+              "raw": "{\n  \"title\": \"Finish Task 3.4\",\n  \"description\": \"CRUD, Postman collection, and deployment\",\n  \"status\": \"todo\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": "{{baseUrl}}/api/tasks",
-            "description": "Create a task. `title` is required. `status` may be `todo`, `in-progress`, or `done`. Saves the new id to `{{taskId}}`."
-          }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            }
+          },
+          "response": []
         },
         {
           "name": "Get Task",
           "request": {
             "method": "GET",
             "header": [],
-            "url": "{{baseUrl}}/api/tasks/{{taskId}}",
-            "description": "Get one task by id. Returns 404 if it does not belong to the authenticated user."
-          }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            }
+          },
+          "response": []
         },
         {
           "name": "Update Task",
           "request": {
             "method": "PUT",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Finish Task 3.4\",\n  \"description\": \"Updated description\",\n  \"status\": \"in-progress\"\n}"
+              "raw": "{\n  \"title\": \"Finish Task 3.4\",\n  \"description\": \"Updated description\",\n  \"status\": \"in-progress\"\n}",
+              "options": { "raw": { "language": "json" } }
             },
-            "url": "{{baseUrl}}/api/tasks/{{taskId}}",
-            "description": "Update one or more fields on a task owned by the authenticated user."
-          }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            }
+          },
+          "response": []
         },
         {
           "name": "Delete Task",
           "request": {
             "method": "DELETE",
             "header": [],
-            "url": "{{baseUrl}}/api/tasks/{{taskId}}",
-            "description": "Delete a task owned by the authenticated user."
-          }
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/{{taskId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "{{taskId}}"]
+            }
+          },
+          "response": []
         }
       ]
     }
