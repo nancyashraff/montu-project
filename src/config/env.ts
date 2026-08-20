@@ -54,4 +54,6 @@ export const env = {
   NODE_ENV,
   MONGO_URI: requireEnv('MONGO_URI'),
   JWT_SECRET: getOrCreateJwtSecret(),
+  ADMIN_EMAIL: process.env.ADMIN_EMAIL || (NODE_ENV === 'development' ? 'admin@example.com' : ''),
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD || (NODE_ENV === 'development' ? 'Admin1234' : ''),
 };

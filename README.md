@@ -11,7 +11,8 @@ montu-project/
 ├── src/
 │   ├── config/
 │   │   ├── env.ts
-│   │   └── db.ts
+│   │   ├── db.ts
+│   │   └── seed.ts        # Creates default tester admin on startup
 │   ├── controllers/
 │   │   ├── auth.controller.ts
 │   │   ├── health.controller.ts
@@ -81,9 +82,65 @@ montu-project/
    NODE_ENV=development
    MONGO_URI=mongodb+srv://<username>:<password>@cluster0.xxx.mongodb.net/<dbname>?retryWrites=true&w=majority
    JWT_SECRET=replace-with-a-long-random-string
+   ADMIN_EMAIL=admin@example.com
+   ADMIN_PASSWORD=Admin1234
    ```
 
    `MONGO_URI` is required. In `NODE_ENV=development`, if `JWT_SECRET` is missing from `.env` the server generates one and saves it there so tokens stay valid after a restart. In any other environment `JWT_SECRET` is required.
+
+   A default tester admin is created on startup. See **Default admin (for testers)** below.
+
+---
+
+## 👤 Default admin (for testers)
+
+On startup the server creates this admin **if that email is not already in the database**. Restart with `npm run dev` and look for `Default admin ready. Sign in with admin@example.com` in the console.
+
+| | |
+| :--- | :--- |
+| **Email** | `admin@example.com` |
+| **Password** | `Admin1234` |
+
+Public signup cannot create an admin. Only an existing admin can add another one.
+
+**1. Sign in** — `POST /api/auth/signin` (no token):
+
+```json
+{
+  "email": "admin@example.com",
+  "password": "Admin1234"
+}
+```
+
+Copy `data.token` from the response.
+
+**2. Add another admin** — `POST /api/auth/admins`  
+Authorization: Bearer Token → paste that token.
+
+```json
+{
+  "name": "Admin Two",
+  "email": "admin2@example.com",
+  "password": "secret123"
+}
+```
+
+Expected **201** and `"role": "admin"`.
+
+**Which requests need a token**
+
+| Endpoint | Token? |
+| :--- | :--- |
+| `GET /ping` | No |
+| `POST /api/auth/signup` | No |
+| `POST /api/auth/signin` | No |
+| `POST /api/auth/admins` | Yes — must be an **admin** |
+| `GET/POST /api/tasks` | Yes — any logged-in user |
+| `GET/PUT/DELETE /api/tasks/:id` | Yes — any logged-in user |
+
+No logout endpoint: to switch users, sign in again and paste the new token. Protected requests do not inherit a parent token in Postman — paste it on each protected request.
+
+On Vercel, set `ADMIN_EMAIL` and `ADMIN_PASSWORD` to the same values so the live app also gets this admin.
 
 ---
 
@@ -142,10 +199,11 @@ Authorization: Bearer <jwt>
 * **Request Body**:
   ```json
   {
-    "email": "jane@example.com",
-    "password": "secret123"
+    "email": "admin@example.com",
+    "password": "Admin1234"
   }
   ```
+  That is the default tester admin created on startup. After sign-in, copy `data.token` for protected routes.
 
 ### Create Admin
 
@@ -194,7 +252,7 @@ Import the collection so frontend (or reviewers) can call every endpoint with wo
 2. Select `postman/Montu-API.postman_collection.json`
 3. Optionally import `postman/Montu-API-Local.postman_environment.json`
 4. Set collection variable `baseUrl` to `http://localhost:3000` or the live URL
-5. Run **Sign Up** or **Sign In** first — the JWT is stored in `{{token}}`
+5. Run **Sign In** with `admin@example.com` / `Admin1234` (or **Sign Up** for a regular user). Copy `data.token` and paste it into **Authorization → Bearer Token** on Tasks or Create Admin. Those requests do not inherit a parent token.
 6. Run **Create Task** — the new id is stored in `{{taskId}}` for get/update/delete
 
 ---
@@ -234,6 +292,8 @@ Vercel runs this Express app as a serverless function. `src/index.ts` exports th
    * `NODE_ENV` = `production`
    * `MONGO_URI` = your Atlas connection string
    * `JWT_SECRET` = a long random string
+   * `ADMIN_EMAIL` = `admin@example.com`
+   * `ADMIN_PASSWORD` = `Admin1234`
 5. Deploy.
 
 After deploy, open `https://<your-project>.vercel.app/ping`. Point Postman `baseUrl` at that origin and run the collection against the live API.
