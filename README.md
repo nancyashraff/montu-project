@@ -2,6 +2,10 @@
 
 A REST API built with **Node.js**, **Express**, **TypeScript**, and **MongoDB (Mongoose)**. It includes JWT authentication, protected Task CRUD, request validation, and a Postman collection for frontend consumption.
 
+**Live API:** [https://montu-project-kappa.vercel.app](https://montu-project-kappa.vercel.app)
+
+Health check: [https://montu-project-kappa.vercel.app/ping](https://montu-project-kappa.vercel.app/ping)
+
 ---
 
 ## 📐 Project Structure
@@ -278,7 +282,7 @@ Import the collection so frontend (or reviewers) can call every endpoint with wo
 1. Open Postman → **Import**
 2. Select `postman/Montu-API.postman_collection.json`
 3. Optionally import `postman/Montu-API-Local.postman_environment.json`
-4. Set collection variable `baseUrl` to `http://localhost:3000`
+4. Set collection variable `baseUrl` to `https://montu-project-kappa.vercel.app` (or `http://localhost:3000` for local)
 5. Run **Sign In** with `admin@example.com` / `Admin1234` (or **Sign Up** for a regular user). Copy `data.token` and paste it into **Authorization → Bearer Token** on Get Me, Tasks, or Create Admin. Those requests do not inherit a parent token.
 6. Run **Create Task** — the new id is stored in `{{taskId}}` for get/update/delete
 
