@@ -37,13 +37,12 @@ montu-project/
 │   ├── utils/
 │   │   ├── app-error.ts
 │   │   └── jwt.ts
-│   ├── app.ts             # Express app (exported for Vercel)
-│   └── index.ts           # Local listen + Vercel default export
+│   ├── app.ts
+│   └── index.ts
 ├── postman/
 │   ├── Montu-API.postman_collection.json
 │   └── Montu-API-Local.postman_environment.json
 ├── .env.example
-├── vercel.json
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -139,8 +138,6 @@ Expected **201** and `"role": "admin"`.
 | `GET/PUT/DELETE /api/tasks/:id` | Yes — any logged-in user |
 
 No logout endpoint: to switch users, sign in again and paste the new token. Protected requests do not inherit a parent token in Postman — paste it on each protected request.
-
-On Vercel, set `ADMIN_EMAIL` and `ADMIN_PASSWORD` to the same values so the live app also gets this admin.
 
 ---
 
@@ -251,7 +248,7 @@ Import the collection so frontend (or reviewers) can call every endpoint with wo
 1. Open Postman → **Import**
 2. Select `postman/Montu-API.postman_collection.json`
 3. Optionally import `postman/Montu-API-Local.postman_environment.json`
-4. Set collection variable `baseUrl` to `http://localhost:3000` or the live URL
+4. Set collection variable `baseUrl` to `http://localhost:3000`
 5. Run **Sign In** with `admin@example.com` / `Admin1234` (or **Sign Up** for a regular user). Copy `data.token` and paste it into **Authorization → Bearer Token** on Tasks or Create Admin. Those requests do not inherit a parent token.
 6. Run **Create Task** — the new id is stored in `{{taskId}}` for get/update/delete
 
@@ -281,31 +278,6 @@ Import the collection so frontend (or reviewers) can call every endpoint with wo
 
 ---
 
-## ☁️ Deployment (Vercel)
-
-Vercel runs this Express app as a serverless function. `src/index.ts` exports the app; `app.listen` only runs locally (not on Vercel).
-
-1. In MongoDB Atlas → **Network Access**, allow `0.0.0.0/0` so Vercel can connect.
-2. Push this repository to GitHub.
-3. In [Vercel](https://vercel.com), import the GitHub repo (Framework Preset can stay as Other / Express).
-4. Add environment variables:
-   * `NODE_ENV` = `production`
-   * `MONGO_URI` = your Atlas connection string
-   * `JWT_SECRET` = a long random string
-   * `ADMIN_EMAIL` = `admin@example.com`
-   * `ADMIN_PASSWORD` = `Admin1234`
-5. Deploy.
-
-After deploy, open `https://<your-project>.vercel.app/ping`. Point Postman `baseUrl` at that origin and run the collection against the live API.
-
-You can also deploy from the CLI:
-
-```bash
-npx vercel
-```
-
----
-
 ## 🛠️ Technology Stack
 
 * **Runtime**: [Node.js](https://nodejs.org/)
@@ -314,4 +286,3 @@ npx vercel
 * **Auth**: [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) and [bcryptjs](https://github.com/dcodeIO/bcrypt.js)
 * **Validation**: [express-validator](https://express-validator.github.io/docs/)
 * **Language**: [TypeScript](https://www.typescriptlang.org/)
-* **Hosting**: [Vercel](https://vercel.com)
