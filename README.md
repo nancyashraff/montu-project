@@ -1,6 +1,6 @@
 # Express TypeScript & MongoDB Server
 
-A clean, production-ready REST API boilerplate built with **Node.js**, **Express**, **TypeScript**, and **MongoDB (Mongoose)**. Features a modular directory structure, custom logging & global error middlewares, Mongoose User schema modeling with validation, JWT authentication, environment variable configuration, and a live-reloading dev environment powered by `tsx`.
+A REST API built with **Node.js**, **Express**, **TypeScript**, and **MongoDB (Mongoose)**. It includes JWT authentication, protected Task CRUD, request validation, and a Postman collection for frontend consumption.
 
 ---
 
@@ -9,43 +9,44 @@ A clean, production-ready REST API boilerplate built with **Node.js**, **Express
 ```
 montu-project/
 ├── src/
-│   ├── config/            # Environment and database configuration
-│   │   ├── env.ts         # Loads and validates required environment variables
-│   │   └── db.ts          # MongoDB Atlas connection handler
-│   ├── controllers/       # Request handlers
+│   ├── config/
+│   │   ├── env.ts
+│   │   └── db.ts
+│   ├── controllers/
 │   │   ├── auth.controller.ts
-│   │   └── health.controller.ts
-│   ├── middlewares/       # Express middlewares
+│   │   ├── health.controller.ts
+│   │   └── task.controller.ts
+│   ├── middlewares/
+│   │   ├── auth.middleware.ts
 │   │   ├── error.middleware.ts
 │   │   ├── logger.middleware.ts
 │   │   └── validation.middleware.ts
-│   ├── models/            # Mongoose schemas & data models
-│   │   └── user.model.ts
-│   ├── routes/            # API endpoint mapping
+│   ├── models/
+│   │   ├── user.model.ts
+│   │   └── task.model.ts
+│   ├── routes/
 │   │   ├── auth.route.ts
-│   │   └── health.route.ts
-│   ├── services/          # Business logic (auth, password hashing)
-│   │   └── auth.service.ts
-│   ├── utils/             # Shared helpers
-│   │   └── jwt.ts         # JWT signing
-│   └── index.ts           # Server entry point
-├── .env.example           # Environment variable template (copy to .env)
-├── .gitignore
+│   │   ├── health.route.ts
+│   │   └── task.route.ts
+│   ├── services/
+│   │   ├── auth.service.ts
+│   │   └── task.service.ts
+│   ├── types/
+│   │   └── express.d.ts
+│   ├── utils/
+│   │   ├── app-error.ts
+│   │   └── jwt.ts
+│   ├── app.ts             # Express app (exported for Vercel)
+│   └── index.ts           # Local listen + Vercel default export
+├── postman/
+│   ├── Montu-API.postman_collection.json
+│   └── Montu-API-Local.postman_environment.json
+├── .env.example
+├── vercel.json
 ├── package.json
 ├── tsconfig.json
 └── README.md
 ```
-
-### Folder Breakdown
-
-* **`src/config/`**: Loads `.env` (`env.ts`) and connects Mongoose to MongoDB Atlas (`db.ts`).
-* **`src/controllers/`**: HTTP request handlers that return API responses.
-* **`src/routes/`**: API paths bound to controller actions.
-* **`src/middlewares/`**: Request logging, input validation, and global error handling.
-* **`src/models/`**: Mongoose schemas, interfaces, and validation rules.
-* **`src/services/`**: Business logic such as registration, login, and password hashing.
-* **`src/utils/`**: Shared helpers such as JWT token generation.
-* **`src/index.ts`**: Main entry point: connects to MongoDB, applies middlewares, registers routes, and starts Express.
 
 ---
 
@@ -53,9 +54,9 @@ montu-project/
 
 ### Prerequisites
 
-* **Node.js** (v18 or higher recommended)
-* **npm** or **yarn**
-* **MongoDB Atlas** cluster (or local MongoDB instance)
+* **Node.js** v20 or higher
+* **npm**
+* **MongoDB Atlas** cluster (or local MongoDB)
 
 ### Installation
 
@@ -88,23 +89,27 @@ montu-project/
 
 ## ⚙️ Available Scripts
 
-In the project directory, you can run:
-
 | Command | Description |
 | :--- | :--- |
-| `npm run dev` | Runs the server in development mode using `tsx` with hot reload on file changes. |
-| `npm run build` | Compiles TypeScript code down to JavaScript in the `dist/` directory. |
+| `npm run dev` | Runs the server in development mode using `tsx` with hot reload. |
+| `npm run build` | Compiles TypeScript to JavaScript in `dist/`. |
 | `npm start` | Runs the compiled production build from `dist/index.js`. |
 
 ---
 
 ## 📡 API Endpoints
 
+Protected routes require:
+
+```
+Authorization: Bearer <jwt>
+```
+
 ### Health Check
 
 * **URL**: `/ping`
 * **Method**: `GET`
-* **Description**: Returns server health status, uptime, and current ISO timestamp.
+* **Auth**: None
 * **Sample Response**:
   ```json
   {
@@ -118,7 +123,8 @@ In the project directory, you can run:
 
 * **URL**: `/api/auth/signup`
 * **Method**: `POST`
-* **Description**: Validates input, hashes the password with bcrypt, stores the user in MongoDB, and returns a JWT. New accounts are always created with the `user` role.
+* **Auth**: None
+* **Description**: Creates a `user`. Sending `"role": "admin"` is rejected with `403` unless no admin exists yet (first-admin bootstrap).
 * **Request Body**:
   ```json
   {
@@ -127,28 +133,12 @@ In the project directory, you can run:
     "password": "secret123"
   }
   ```
-* **Sample Response** (`201`):
-  ```json
-  {
-    "status": "success",
-    "message": "User registered successfully",
-    "data": {
-      "user": {
-        "id": "64f1c2a0b8e1a2b3c4d5e6f7",
-        "name": "Jane Doe",
-        "email": "jane@example.com",
-        "role": "user"
-      },
-      "token": "<jwt>"
-    }
-  }
-  ```
 
 ### Sign In
 
 * **URL**: `/api/auth/signin`
 * **Method**: `POST`
-* **Description**: Validates credentials and returns a JWT.
+* **Auth**: None
 * **Request Body**:
   ```json
   {
@@ -156,36 +146,103 @@ In the project directory, you can run:
     "password": "secret123"
   }
   ```
-* **Sample Response** (`200`):
+
+### Create Admin
+
+* **URL**: `/api/auth/admins`
+* **Method**: `POST`
+* **Auth**: Bearer token of an **admin**
+* **Request Body**:
   ```json
   {
-    "status": "success",
-    "message": "Logged in successfully",
-    "data": {
-      "user": {
-        "id": "64f1c2a0b8e1a2b3c4d5e6f7",
-        "name": "Jane Doe",
-        "email": "jane@example.com",
-        "role": "user"
-      },
-      "token": "<jwt>"
-    }
+    "name": "Admin Two",
+    "email": "admin2@example.com",
+    "password": "secret123"
   }
   ```
+  Regular users receive `403`. Missing/invalid tokens receive `401`.
+
+### Tasks (protected)
+
+| Method | URL | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/tasks` | List the authenticated user's tasks |
+| `POST` | `/api/tasks` | Create a task |
+| `GET` | `/api/tasks/:id` | Get one task |
+| `PUT` | `/api/tasks/:id` | Update one task |
+| `DELETE` | `/api/tasks/:id` | Delete one task |
+
+**Create / update body:**
+
+```json
+{
+  "title": "Finish Task 3.4",
+  "description": "CRUD, Postman collection, and deployment",
+  "status": "todo"
+}
+```
+
+`title` is required on create. `status` may be `todo`, `in-progress`, or `done`. Users can only read and change their own tasks.
+
+---
+
+## 📬 Postman
+
+Import the collection so frontend (or reviewers) can call every endpoint with working examples:
+
+1. Open Postman → **Import**
+2. Select `postman/Montu-API.postman_collection.json`
+3. Optionally import `postman/Montu-API-Local.postman_environment.json`
+4. Set collection variable `baseUrl` to `http://localhost:3000` or the live URL
+5. Run **Sign Up** or **Sign In** first — the JWT is stored in `{{token}}`
+6. Run **Create Task** — the new id is stored in `{{taskId}}` for get/update/delete
 
 ---
 
 ## 🗄️ Database Schemas
 
-### User Schema (`src/models/user.model.ts`)
+### User
 
 | Field | Type | Validation Rules |
 | :--- | :--- | :--- |
 | `name` | String | Required, trimmed, max 50 characters |
-| `email` | String | Required, unique, lowercase, regex email format validation |
+| `email` | String | Required, unique, lowercase |
 | `passwordHash` | String | Required |
-| `role` | String | Enum (`'user'`, `'admin'`), default: `'user'`. Public signup always assigns `'user'`. |
+| `role` | String | Enum (`user`, `admin`), default `user`. Public signup assigns `user`. Only an admin can create another admin (`POST /api/auth/admins`). |
 | `createdAt` / `updatedAt` | Date | Auto-generated timestamps |
+
+### Task
+
+| Field | Type | Validation Rules |
+| :--- | :--- | :--- |
+| `title` | String | Required, trimmed, max 100 characters |
+| `description` | String | Optional, max 500 characters |
+| `status` | String | Enum (`todo`, `in-progress`, `done`), default `todo` |
+| `userId` | ObjectId | Required, indexed, references User |
+| `createdAt` / `updatedAt` | Date | Auto-generated timestamps |
+
+---
+
+## ☁️ Deployment (Vercel)
+
+Vercel runs this Express app as a serverless function. `src/index.ts` exports the app; `app.listen` only runs locally (not on Vercel).
+
+1. In MongoDB Atlas → **Network Access**, allow `0.0.0.0/0` so Vercel can connect.
+2. Push this repository to GitHub.
+3. In [Vercel](https://vercel.com), import the GitHub repo (Framework Preset can stay as Other / Express).
+4. Add environment variables:
+   * `NODE_ENV` = `production`
+   * `MONGO_URI` = your Atlas connection string
+   * `JWT_SECRET` = a long random string
+5. Deploy.
+
+After deploy, open `https://<your-project>.vercel.app/ping`. Point Postman `baseUrl` at that origin and run the collection against the live API.
+
+You can also deploy from the CLI:
+
+```bash
+npx vercel
+```
 
 ---
 
@@ -197,6 +254,4 @@ In the project directory, you can run:
 * **Auth**: [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) and [bcryptjs](https://github.com/dcodeIO/bcrypt.js)
 * **Validation**: [express-validator](https://express-validator.github.io/docs/)
 * **Language**: [TypeScript](https://www.typescriptlang.org/)
-* **Dev Execution Engine**: [tsx](https://github.com/privatenumber/tsx)
-* **Config Management**: [dotenv](https://github.com/motdotla/dotenv)
-* **CORS Management**: [cors](https://github.com/expressjs/cors)
+* **Hosting**: [Vercel](https://vercel.com)

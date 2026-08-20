@@ -1,11 +1,34 @@
 import bcrypt from 'bcryptjs';
 import { User } from '../models/user.model.js';
 import { generateToken } from '../utils/jwt.js';
+import { AppError } from '../utils/app-error.js';
 
-export const registerUser = async (name: string, email: string, password: string) => {
+type UserRole = 'user' | 'admin';
+
+const toAuthResult = (user: {
+  _id: { toString(): string };
+  name: string;
+  email: string;
+  role: UserRole;
+}) => ({
+  user: {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  },
+  token: generateToken(user._id.toString(), user.role),
+});
+
+const createAccount = async (
+  name: string,
+  email: string,
+  password: string,
+  role: UserRole
+) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw new Error('User already exists with this email');
+    throw new AppError('User already exists with this email', 400);
   }
 
   const salt = await bcrypt.genSalt(10);
@@ -15,20 +38,31 @@ export const registerUser = async (name: string, email: string, password: string
     name,
     email,
     passwordHash,
-    role: 'user',
+    role,
   });
 
-  const token = generateToken(newUser._id.toString(), newUser.role);
+  return toAuthResult(newUser);
+};
 
-  return {
-    user: {
-      id: newUser._id,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-    },
-    token,
-  };
+export const registerUser = async (
+  name: string,
+  email: string,
+  password: string,
+  requestedRole?: UserRole
+) => {
+  if (requestedRole === 'admin') {
+    const adminExists = await User.exists({ role: 'admin' });
+    if (adminExists) {
+      throw new AppError('Only an admin can create admin accounts', 403);
+    }
+  }
+
+  const role = requestedRole === 'admin' ? 'admin' : 'user';
+  return createAccount(name, email, password, role);
+};
+
+export const registerAdmin = async (name: string, email: string, password: string) => {
+  return createAccount(name, email, password, 'admin');
 };
 
 export const loginUser = async (email: string, password: string) => {
@@ -42,15 +76,5 @@ export const loginUser = async (email: string, password: string) => {
     throw new Error('Invalid email or password');
   }
 
-  const token = generateToken(user._id.toString(), user.role);
-
-  return {
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    },
-    token,
-  };
+  return toAuthResult(user);
 };
